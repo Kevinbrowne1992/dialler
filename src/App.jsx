@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ColumnMapper } from './components/ColumnMapper'
 import { ContactTable } from './components/ContactTable'
 import { SettingsModal } from './components/SettingsModal'
