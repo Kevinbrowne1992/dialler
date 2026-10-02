@@ -183,6 +183,11 @@ export function ContactTable({
                       </div>
                       <div>
                         <span className="font-medium text-white">{contact.name || 'Unnamed'}</span>
+                        {contact.title && (
+                          <span className="block text-[11px] text-emerald-400/80">
+                            {contact.title}
+                          </span>
+                        )}
                         <span className="block text-[11px] text-slate-500 sm:hidden">
                           {contact.company || '—'}
                         </span>
@@ -209,6 +214,11 @@ export function ContactTable({
                           <span className="font-mono text-sm text-slate-200">
                             {contact.phone}
                           </span>
+                          {contact.secondaryPhone && contact.secondaryPhone !== contact.phone && (
+                            <span className="block font-mono text-[10px] text-slate-400">
+                              Alt: {contact.secondaryPhone}
+                            </span>
+                          )}
                           {contact.sanitized && contact.sanitized !== contact.phone && (
                             <span className="mt-0.5 block font-mono text-[11px] text-slate-400">
                               → {contact.sanitized}

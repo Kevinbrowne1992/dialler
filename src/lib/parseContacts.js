@@ -3,16 +3,30 @@ import { sanitizePhone } from './sanitize'
 
 export async function parseSpreadsheet(file, targetSheetName = null) {
   const buffer = await file.arrayBuffer()
-  const workbook = XLSX.read(buffer, { type: 'array', cellDates: true })
+  const workbook = XLSX.read(buffer, {
+    type: 'array',
+    cellDates: true,
+    raw: false, // Ensures formatted cell text is parsed (e.g. phone numbers with leading zeros)
+  })
+
   const sheetNames = workbook.SheetNames || []
   if (!sheetNames.length) {
     throw new Error('The spreadsheet contains no sheets.')
   }
 
-  const selectedSheetName =
-    targetSheetName && sheetNames.includes(targetSheetName)
-      ? targetSheetName
-      : sheetNames[0]
+  // Auto-detect the best sheet if user didn't specify one
+  let selectedSheetName = targetSheetName
+  if (!selectedSheetName || !sheetNames.includes(selectedSheetName)) {
+    // If multiple sheets, pick the first sheet that actually has non-empty rows
+    selectedSheetName = sheetNames[0]
+    for (const name of sheetNames) {
+      const s = workbook.Sheets[name]
+      if (s && s['!ref']) {
+        selectedSheetName = name
+        break
+      }
+    }
+  }
 
   const sheet = workbook.Sheets[selectedSheetName]
   const matrix = XLSX.utils.sheet_to_json(sheet, {
@@ -31,24 +45,40 @@ export async function parseSpreadsheet(file, targetSheetName = null) {
     }
   }
 
-  // Find the first non-empty row to treat as headers
-  let headerRowIndex = 0
-  while (
-    headerRowIndex < matrix.length &&
-    (!matrix[headerRowIndex] ||
-      !matrix[headerRowIndex].some((cell) => String(cell ?? '').trim() !== ''))
-  ) {
-    headerRowIndex++
+  // Smart Header Row Detection:
+  // Instead of blindly picking row 0, score the first 15 rows to find the true header row
+  // (Handles files where rows 1-3 have titles, export disclaimers, or metadata)
+  let bestHeaderRowIndex = 0
+  let maxScore = -1
+  const headerKeywords = /phone|tel|mobile|cell|name|email|company|account|lead|title|address|contact|nombre|telefono|correo/i
+
+  for (let r = 0; r < Math.min(matrix.length, 15); r++) {
+    const row = matrix[r]
+    if (!Array.isArray(row)) continue
+    const filledCells = row.filter((c) => c != null && String(c).trim() !== '')
+    if (filledCells.length < 2) continue // A single cell (like a title/banner) is not a header row
+
+    let score = filledCells.length * 2
+    for (const cell of filledCells) {
+      if (headerKeywords.test(String(cell))) {
+        score += 12
+      }
+    }
+
+    if (score > maxScore) {
+      maxScore = score
+      bestHeaderRowIndex = r
+    }
   }
 
-  const rawHeaders = matrix[headerRowIndex] || []
+  const rawHeaders = matrix[bestHeaderRowIndex] || []
   const headers = rawHeaders.map((cell, index) => {
     const label = String(cell ?? '').trim()
     return label || `Column ${index + 1}`
   })
 
   const rows = matrix
-    .slice(headerRowIndex + 1)
+    .slice(bestHeaderRowIndex + 1)
     .map((row) => {
       const record = {}
       headers.forEach((header, index) => {
@@ -79,21 +109,37 @@ export function buildContacts(rows, map) {
     const first = cell(row, map.firstName)
     const last = cell(row, map.lastName)
     const combined = [first, last].filter(Boolean).join(' ')
-    const name = cell(row, map.name) || combined || `Contact ${index + 1}`
-    const phone = cell(row, map.phone)
+    let name = cell(row, map.name) || combined || `Contact ${index + 1}`
+
+    // Automatically normalize "Last, First" into "First Last" if comma present
+    if (name.includes(',') && !map.firstName && !map.lastName) {
+      const parts = name.split(',').map((p) => p.trim())
+      if (parts.length === 2 && parts[0] && parts[1]) {
+        name = `${parts[1]} ${parts[0]}`
+      }
+    }
+
+    // Smart phone cascading: primary phone -> secondary/mobile fallback
+    const primaryPhone = cell(row, map.phone)
+    const secondaryPhone = cell(row, map.secondaryPhone)
+    const activePhone = primaryPhone || secondaryPhone
 
     return {
       id: `contact-${index}-${Date.now().toString(36)}`,
       index: index + 1,
       name,
-      phone,
-      sanitized: sanitizePhone(phone),
+      phone: activePhone,
+      primaryPhone,
+      secondaryPhone,
+      sanitized: sanitizePhone(activePhone),
       company: cell(row, map.company),
       email: cell(row, map.email),
+      title: cell(row, map.title),
       source: row,
     }
   })
 }
+
 
 export function generateReportCsv(contacts, history = {}, dispositions = {}) {
   const headers = [
