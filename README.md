@@ -28,6 +28,21 @@ A clean, lightweight web utility engineered for high-velocity outbound calling. 
 
 ---
 
+## 🛠️ Windows Protocol Setup Script (Set Zoiper as Default for TEL & SIP)
+
+To ensure Windows and browsers automatically dispatch `tel:` and `sip:` calls directly into Zoiper without asking "How do you want to open this link?", we provide a 1-click Windows setup script.
+
+- **Files**:
+  - `releases/Set-ZoiperDefaults.bat` (1-click double-clickable launcher, bypasses execution policy)
+  - `releases/Set-ZoiperDefaults.ps1` (Full PowerShell script with auto-detection & shell notification)
+- **How to use**:
+  1. Download or copy [`releases/Set-ZoiperDefaults.bat`](file:///c:/Users/KevTheDev/Repo%27s/dialler/releases/Set-ZoiperDefaults.bat).
+  2. Double-click it.
+  3. The script automatically detects `Zoiper5.exe` across Program Files / AppData / Registry, registers `tel`, `sip`, `callto`, and `zoiper` protocol handlers in Windows, and updates Default Apps capabilities.
+  4. (Also downloadable directly from the Dialler app under **Settings ⚙️ -> Windows Setup Script**).
+
+---
+
 ## Features
 
 - **100% Client-Side Processing**: Parses spreadsheets locally using SheetJS (`xlsx`). Zero contact data leaves the user's machine.

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { PROTOCOL_OPTIONS, buildDialUri, triggerDial, playDialTone } from '../lib/dial'
+import { downloadZoiperSetupBatch } from '../lib/windowsSetup'
 
 export function SettingsModal({ open, settings, onChange, onClose }) {
   const [testNumber, setTestNumber] = useState('+14155550142')
@@ -109,6 +110,34 @@ export function SettingsModal({ open, settings, onChange, onClose }) {
                 </label>
               )
             })}
+          </div>
+        </div>
+
+        {/* Windows 1-Click Protocol Setup Helper */}
+        <div className="mt-3.5 rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-3.5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+                <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                Windows Setup Script (TEL & SIP)
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                Download and double-click our 1-click script to set Zoiper as your default Windows dialer with zero popups.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={downloadZoiperSetupBatch}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20 active:scale-95"
+              title="Download Set-ZoiperDefaults.bat"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Download .bat</span>
+            </button>
           </div>
         </div>
 

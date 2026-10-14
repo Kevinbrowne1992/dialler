@@ -73,5 +73,12 @@ In Zoiper:
 2. Go to **Automation** (or **Integrations**).
 3. Make sure **"Automatically dial on protocol link click"** is **checked**.
 
-#### 3. Is my contact list safe?
+#### 3. Windows asks "How do you want to open this link?" or opens the wrong app (like Skype/Teams/Phone Link)?
+Run our 1-click Windows configuration script to lock in Zoiper:
+1. In the Dialler app, click **Settings ⚙️** at the top right.
+2. Click the **Download .bat** button under *"Windows Setup Script (TEL & SIP)"* (or open `releases/Set-ZoiperDefaults.bat`).
+3. **Double-click** the downloaded `Set-ZoiperDefaults.bat` file.
+4. It will automatically detect Zoiper on your machine, connect Windows `tel:` and `sip:` calls directly to Zoiper, and refresh your system settings.
+
+#### 4. Is my contact list safe?
 **Yes, 100%!** This program runs entirely on your own computer. None of your contacts or phone numbers are ever sent over the internet or uploaded to any server.
